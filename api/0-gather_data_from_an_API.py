@@ -1,31 +1,34 @@
 #!/usr/bin/python3
-"""
-    python script that returns TODO list progress for a given employee ID
-"""
+"""This script retrieves todos for a specific user."""
+
 import json
 import requests
-from sys import argv
+import sys
 
+"""Imported modules to be used by the program"""
 
-if __name__ == "__main__":
-    """ Functions for gathering  data from an API """
-    request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
-    employee = json.loads(request_employee.text)
-    employee_name = employee.get("name")
-    request_todos = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
-    tasks = {}
-    employee_todos = json.loads(request_todos.text)
+__author__ = "Junior"
+if __name__ == '__main__':
+    """Scripts to be executed"""
+    id = sys.argv[1]
+    response = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}'.format(id),
+        verify=False)
+    data = json.loads(response.text)
+    todos = requests.get(
+        'https://jsonplaceholder.typicode.com/todos/', verify=False)
+    result = json.loads(todos.text)
+    done = 0
+    total = 0
+    itemArr = []
 
-    for dictionary in employee_todos:
-        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+    for item in result:
+        if data['id'] == item['userId']:
+            total += 1
+            if item['completed']:
+                done += 1
+                itemArr.append(item['title'])
 
-    EMPLOYEE_NAME = employee_name
-    TOTAL_NUMBER_OF_TASKS = len(tasks)
-    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
-    print("Employee {} is done with tasks({}/{}):".format(
-        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
-    for k, v in tasks.items():
-        if v is True:
-            print("\t {}".format(k))
+    print("Employee {} is done with ({}/{})".format(data['name'], done, total))
+    for item in itemArr:
+        print("\t {}".format(item))
